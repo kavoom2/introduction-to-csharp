@@ -1,58 +1,93 @@
 ﻿using System;
 
-namespace Program
+namespace MyCSharpProgram
 {
-    internal class Program
+    class MyClass
     {
+        static int Add(int num1, int num2)
+        {
+            return num1 + num2;
+        }
+
+        static float Add(float num1, float num2)
+        {
+            return num1 + num2;
+        }
+
+        static int Add(int num1, int num2, int num3 = 0, int num4 = 0)
+        {
+            return num1 + num2 + num3 + num4;
+        }
+
+        // 메서드 오버로딩 -> 같은 이름의 메서드를 여러개 정의할 수 있습니다.
+        static void AddOne(int num)
+        {
+            num += 1;
+            Console.WriteLine(num);
+        }
+
+        static void AddOneByRef(ref int num) // reference -> 값이 아닌 주소를 전달합니다.
+        {
+            num += 1;
+            Console.WriteLine(num);
+        }
+
+        static int Sum(int[] numbers)
+        {
+            int sum = 0;
+
+            foreach (int num in numbers)
+            {
+                sum += num;
+            }
+
+            return sum;
+        }
+
+        static void Swap(ref int num1, ref int num2)
+        {
+            (num1, num2) = (num2, num1);
+        }
+
+        static void Divide(int num1, int num2, out int result, out int remainder) // out -> 값을 반환하지 않고, 참조로 전달합니다.
+        {
+            result = num1 / num2;
+            remainder = num1 % num2;
+        }
+
+        static void MyMethod()
+        {
+            Console.WriteLine("Hello World!");
+        }
+
         static void Main(string[] args)
         {
-            int maxHp = 100;
-            int hp = maxHp;
+            int myNum = 1;
 
-            float a = 3.14256f; // float는 suffix로 f를 붙어야 합니다. 4byte의 정확도가 떨어지는 값입니다.
-            double b = 3.14256d; // double은 suffix로 d를 붙이거나 생략합니다. 정확한 값입니다. 8byte의 정확도가 높은 값입니다.
+            AddOne(myNum);
+            Console.WriteLine(myNum);
 
-            string myName = "홍길동";
-            bool myBool = false;
+            AddOneByRef(ref myNum);
+            Console.WriteLine(myNum);
 
-            int myInt = 100;
-            short fromIntToShort = (short)myInt; // short는 2byte의 정수형입니다. int는 4byte의 정수형입니다. 따라서 형변환(캐스팅)을 해야 합니다. -> int는 32bit의 정수형이므로, 16bit의 short로 변환하면 16bit가 손실됩니다.
-            int fromShortToInt = fromIntToShort;
+            int[] numbers = { 1, 2, 3, 4, 5 };
 
-            float myFloat = a;
-            int fromFloatToInt = (int)myFloat; // float는 4byte의 실수형입니다. int는 4byte의 정수형입니다. 따라서 형변환(캐스팅)을 해야 합니다. -> float은 가장 앞의 1bit가 부호를 나타내므로, 31bit만 사용합니다. 따라서 32bit의 int로 변환하면 1bit가 손실됩니다.
+            Swap(ref numbers[0], ref numbers[1]); // reference -> 값이 아닌 주소를 전달합니다.
+            Console.WriteLine(numbers[0]);
+            Console.WriteLine(numbers[1]);
+            Console.WriteLine(numbers);
 
-            // Console.WriteLine("Please input your name:");
-            // string input = Console.ReadLine();
-            // int parsedInput = int.Parse(input);
+            int result;
+            int remainder;
 
-            // Console.WriteLine($"Input is {input}");
-            // Console.WriteLine($"Parsed input is {parsedInput}");
+            Divide(10, 3, out result, out remainder); // out -> 값을 반환하지 않고, 참조로 전달합니다.
+            Console.WriteLine(result);
+            Console.WriteLine(remainder);
 
-            string legacyMessage = string.Format("당신의 HP는 {0} / {1}입니다.", hp, maxHp);
-            Console.WriteLine(legacyMessage);
-
-            string message = $"당신의 HP는 {hp} / {maxHp}입니다.";
-            Console.WriteLine(message);
-
-            int dividedInt = 10 / 3; // 3.3333... -> 3
-            int remainderInt = 10 % 3; // 1
-            Console.WriteLine(dividedInt);
-            Console.WriteLine(remainderInt);
-
-            int myVal = 10;
-            myVal *= 2; // myVal = myVal * 2;
-            Console.WriteLine(myVal);
-            Console.WriteLine(++myVal); // 21
-            Console.WriteLine(myVal++); // 21
-            Console.WriteLine(myVal); // 22
-
-            Console.WriteLine(10 / 3); // 3
-            Console.WriteLine(10d / 3); // 3.3333...
-
-            bool isAlive = (hp > 0);
-            bool isHpFull = (hp == maxHp);
-            var inferredType = 10; // 컴파일 시점에 타입을 추론합니다. int로 추론됩니다.
+            Console.WriteLine(Add(1.2f, 1.0f));
+            Console.WriteLine(Add(1, 2));
+            Console.WriteLine(Add(1, 2, 3)); // 선택적 매개변수
+            Console.WriteLine(Add(1, 2, num4: 4)); // 키워드 매개변수
         }
     }
 }
