@@ -1,249 +1,177 @@
 ﻿using System;
-using System.Security.Cryptography;
 
 namespace CSharp
 {
+    class Knight
+    {
+        public static int myStaticField = 0; // 클래스에 속한 정적 필드입니다. (Javascript의 생성자 함수의 Static Method or field와 동일한 맥락입니다. 예시: Number.isNaN)
+
+        public static void MyStaticMethod()
+        {
+            // Static Method 안에서는 this 키워드를 사용할 수 없습니다.
+            // Static Method 안에서는 정적 필드만 사용할 수 있습니다.
+            Console.WriteLine("MyStaticMethod is called");
+            myStaticField = 100;
+        }
+
+        public static Knight CreateKnight()
+        {
+            Knight knight = new() { health = 100, attack = 50 };
+            return knight;
+        }
+
+        public int health;
+        public int attack;
+
+        public Knight()
+        {
+            health = 100;
+            attack = 50;
+            Console.WriteLine("Knight: Constructor is called");
+        }
+
+        public Knight(int health = 100, int attack = 50)
+            : this() // 기본 생성자를 호출한다.
+        {
+            this.health = health;
+            this.attack = attack;
+            Console.WriteLine("Knight: Constructor is called - with parameters");
+        }
+
+        public void Move()
+        {
+            Console.WriteLine("Knight is moving");
+        }
+
+        public void Attack()
+        {
+            Console.WriteLine("Knight is attacking");
+        }
+
+        public Knight DeepCopy()
+        {
+            return new Knight() { health = health, attack = attack };
+        }
+    }
+
+    struct Mage
+    {
+        public int health;
+        public int attack;
+    }
+
+    class Player
+    {
+        protected int hp;
+        protected int attack;
+
+        public virtual void Move()
+        {
+            Console.WriteLine("Player is moving");
+        }
+    }
+
+    class Archer : Player
+    {
+        public int dex;
+
+        // 오버로딩과 오버라이딩은 서로 다른 개념입니다!
+        // 오버로딩 - 같은 이름의 메서드를 여러개 만드는 것입니다. (함수 이름의 재사용)
+        // 오버라이딩 - 부모 클래스의 메서드를 자식 클래스에서 재정의하는 것입니다. (다형성)
+        public override void Move()
+        {
+            base.Move(); // 부모 클래스의 메서드를 호출합니다.
+            Console.WriteLine("Archer is moving");
+        }
+    }
+
+    class Ninja : Player
+    {
+        public int dex;
+    }
+
     class Program
     {
-        enum PlayerClassType
+        static void MovePlayer(Player player)
         {
-            None = 0,
-            Knight = 1,
-            Archer = 2,
-            Mage = 3
-        }
+            // Ninja ninja = (Ninja)player; // YOU SHALL NOT PASS! :(
+            player.Move();
 
-        enum MonsterType
-        {
-            None = 0,
-            Slime = 1,
-            Orc = 2,
-            Skeleton = 3
-        }
-
-        struct Player
-        {
-            public int hp;
-            public int attack;
-            public PlayerClassType playerClass;
-        }
-
-        struct Monster
-        {
-            public int hp;
-            public int attack;
-            public MonsterType monsterType;
-        }
-
-        static PlayerClassType SelectPlayerClass()
-        {
-            PlayerClassType selectedPlayerClass = PlayerClassType.None;
-
-            Console.WriteLine("직업을 선택해 주세요.");
-            Console.WriteLine("[1] 전사");
-            Console.WriteLine("[2] 궁수");
-            Console.WriteLine("[3] 법사");
-
-            string input = Console.ReadLine() ?? "";
-
-            switch (input)
+            if (player is Archer) // 'is' 키워드를 사용하여 Casting이 가능한지 확인할 수 있다.
             {
-                case "1":
-                {
-                    selectedPlayerClass = PlayerClassType.Knight;
-                    break;
-                }
-                case "2":
-                {
-                    selectedPlayerClass = PlayerClassType.Archer;
-                    break;
-                }
-                case "3":
-                {
-                    selectedPlayerClass = PlayerClassType.Mage;
-                    break;
-                }
+                Archer archer = (Archer)player;
             }
 
-            return selectedPlayerClass;
+            // "Ninja"로 변환할 수 없으면 null을 반환한다. (Casting을 할 수 없는 경우)
+            Ninja ninja = player as Ninja;
         }
 
-        static void CreatePlayer(PlayerClassType playerClass, out Player player)
+        static Player? GetNullablePlayer(Player player)
         {
-            switch (playerClass)
+            if (player is Archer)
             {
-                case PlayerClassType.Knight:
-                {
-                    player.hp = 100;
-                    player.attack = 10;
-                    player.playerClass = PlayerClassType.Knight;
-                    break;
-                }
-                case PlayerClassType.Archer:
-                {
-                    player.hp = 75;
-                    player.attack = 12;
-                    player.playerClass = PlayerClassType.Archer;
-                    break;
-                }
-                case PlayerClassType.Mage:
-                {
-                    player.hp = 50;
-                    player.attack = 15;
-                    player.playerClass = PlayerClassType.Mage;
-                    break;
-                }
-                default:
-                {
-                    player.hp = 0;
-                    player.attack = 0;
-                    player.playerClass = PlayerClassType.None;
-                    break;
-                }
+                return player;
             }
+
+            return null; // Nullable을 사용하면 null을 반환할 수 있다.
         }
 
-        static void CreateRandomMonster(out Monster monster)
+        static void KillMage(Mage mage)
+        // 'Strut(구조체)'은 값 형식(Value Type)이기 때문에 복사가 일어난다. (복사본이 생성된다.)
+        // 따라서 mage.health = 0;이 적용되지 않는다.
         {
-            Random rand = new();
-            int randMonster = rand.Next(1, 4);
-
-            switch (randMonster)
-            {
-                case (int)MonsterType.Slime:
-                {
-                    monster.hp = 20;
-                    monster.attack = 2;
-                    monster.monsterType = MonsterType.Slime;
-                    break;
-                }
-                case (int)MonsterType.Orc:
-                {
-                    monster.hp = 40;
-                    monster.attack = 4;
-                    monster.monsterType = MonsterType.Orc;
-                    break;
-                }
-                case (int)MonsterType.Skeleton:
-                {
-                    monster.hp = 30;
-                    monster.attack = 3;
-                    monster.monsterType = MonsterType.Skeleton;
-                    break;
-                }
-                default:
-                {
-                    monster.hp = 0;
-                    monster.attack = 0;
-                    monster.monsterType = MonsterType.None;
-                    break;
-                }
-            }
+            mage.health = 0;
         }
 
-        static void EnterGame(ref Player player)
+        static void KillKnight(Knight knight)
+        // 'Class'는 참조 형식(Reference Type)이기 때문에 복사가 일어나지 않는다. (복사본이 생성되지 않는다.)
+        // 따라서 knight.health = 0;이 적용된다.
         {
-            while (true)
-            {
-                Console.WriteLine("게임에 접속했습니다.");
-                Console.WriteLine("[1] 필드로 간다.");
-                Console.WriteLine("[2] 로비로 돌아간다.");
-
-                string input = Console.ReadLine() ?? "";
-
-                if (input == "1")
-                {
-                    EnterField(ref player);
-                }
-                else if (input == "2")
-                {
-                    break;
-                }
-            }
-        }
-
-        static void EnterField(ref Player player)
-        {
-            while (true)
-            {
-                Console.WriteLine("필드에 접속했습니다.");
-
-                CreateRandomMonster(out Monster monster);
-                Console.WriteLine($"몬스터가 출현했습니다. ({monster.monsterType})");
-
-                Console.WriteLine("[1] 전투 모드로 돌입한다.");
-                Console.WriteLine("[2] 일정 확률로 도망친다.");
-
-                string input = Console.ReadLine() ?? "";
-                if (input == "1")
-                {
-                    EnterBattle(ref player, ref monster);
-                }
-                else if (input == "2")
-                {
-                    TryEscape(ref player, ref monster);
-                }
-
-                if (player.hp <= 0)
-                {
-                    Console.WriteLine("사망했습니다.");
-                    break;
-                }
-            }
-        }
-
-        static void EnterBattle(ref Player player, ref Monster monster)
-        {
-            while (true)
-            {
-                monster.hp -= player.attack;
-                if (monster.hp <= 0)
-                {
-                    Console.WriteLine("승리했습니다.");
-                    Console.WriteLine($"남은 체력: {player.hp}");
-                    break;
-                }
-
-                player.hp -= monster.attack;
-                if (player.hp <= 0)
-                {
-                    Console.WriteLine("패배했습니다.");
-                    break;
-                }
-            }
-        }
-
-        static void TryEscape(ref Player player, ref Monster monster)
-        {
-            Random rand = new();
-            int randValue = rand.Next(0, 101);
-
-            if (randValue < 33)
-            {
-                Console.WriteLine("도망치는데 성공했습니다.");
-            }
-            else
-            {
-                Console.WriteLine("도망치는데 실패했습니다.");
-                EnterBattle(ref player, ref monster);
-            }
+            knight.health = 0;
         }
 
         static void Main(string[] args)
         {
-            while (true)
-            {
-                PlayerClassType selectedPlayerClass = SelectPlayerClass();
+            // Mage mage = new() { health = 100, attack = 50 }; // Strut
+            // Knight knight = new(health: 200, attack: 100); // Class
 
-                if (selectedPlayerClass != PlayerClassType.None)
-                {
-                    CreatePlayer(selectedPlayerClass, out Player player);
+            // Console.WriteLine($"Knight health: {knight.health}");
+            // Console.WriteLine($"Knight attack: {knight.attack}");
 
-                    Console.WriteLine("선택한 직업: " + player.playerClass);
-                    Console.WriteLine($"HP: {player.hp}, 공격력: {player.attack}");
-                    EnterGame(ref player);
-                }
-            }
+            // knight.Move();
+            // knight.Attack();
+
+            // KillMage(mage);
+            // KillKnight(knight);
+
+            // Console.WriteLine($"Mage health: {mage.health}");
+            // Console.WriteLine($"Knight health: {knight.health}");
+
+            // Knight knight2 = knight.DeepCopy();
+            // Console.WriteLine(knight == knight2); // False
+
+            // Archer archer = new() { dex = 10 };
+            // Ninja ninja = new() { dex = 20 };
+
+            // MovePlayer(archer);
+            // MovePlayer(ninja);
+
+            string name = "Harry Potter";
+            bool foundHarry = name.Contains("Harry"); // true
+            int index = name.IndexOf("Potter"); // 6
+
+            name += " Junior";
+            string lowerCaseName = name.ToLower(); // "harry potter junior"
+            string upperCaseName = name.ToUpper(); // "HARRY POTTER JUNIOR"
+
+            name.Split(" "); // ["Harry", "Potter", "Junior"]
+            name.Split(new char[] { ' ' }); // ["Harry", "Potter", "Junior"]
+        }
+
+        static void StaticTest()
+        {
+            Knight.MyStaticMethod();
+            Knight.myStaticField = 100;
         }
     }
 }
