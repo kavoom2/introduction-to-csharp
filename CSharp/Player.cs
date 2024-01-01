@@ -38,7 +38,133 @@ namespace Algorithm
             _board = board;
 
             // RightHand();
-            BFS();
+            // BFS();
+            AStar();
+        }
+
+        struct PQNode : IComparable<PQNode>
+        {
+            public int F;
+            public int G;
+            public int Y;
+            public int X;
+
+            public int CompareTo(PQNode other)
+            {
+                if (F == other.F)
+                {
+                    return 0;
+                }
+
+                return F < other.F ? 1 : -1;
+            }
+        }
+
+        void AStar()
+        {
+            // Scoring
+            // F = G + H;
+            // F: 최종 점수 (작을 수록 좋습니다.)
+            // G: 시작점에서 해당 지점까지 이동하는데 필요한 비용 (작을 수록 좋습니다.)
+            // H: 해당 지점에서 목적지까지 거리 (작을 수록 좋습니다.)
+
+            bool[,] visited = new bool[_board.Size, _board.Size];
+            int[,] priority = new int[_board.Size, _board.Size];
+            for (int y = 0; y < _board.Size; y++)
+            {
+                for (int x = 0; x < _board.Size; x++)
+                {
+                    priority[y, x] = int.MaxValue;
+                }
+            }
+            Position[,] parent = new Position[_board.Size, _board.Size];
+            PriorityQueue<PQNode> pq = new();
+
+            int[] deltaY = { -1, 0, 1, 0, -1, 1, 1, -1 };
+            int[] deltaX = { 0, -1, 0, 1, -1, -1, 1, 1 };
+            int[] cost = { 10, 10, 10, 10, 14, 14, 14, 14 };
+
+            priority[PosY, PosX] =
+                10 * (Math.Abs(_board.DestY - PosY) + Math.Abs(_board.DestX - PosX));
+            pq.Enqueue(
+                new PQNode
+                {
+                    F = priority[PosY, PosX],
+                    G = 0,
+                    Y = PosY,
+                    X = PosX
+                }
+            );
+            parent[PosY, PosX] = new Position(PosX, PosY);
+
+            while (pq.Count > 0)
+            {
+                PQNode node = pq.Dequeue();
+
+                if (visited[node.Y, node.X])
+                {
+                    continue;
+                }
+
+                visited[node.Y, node.X] = true;
+                if (node.Y == _board.DestY && node.X == _board.DestX)
+                {
+                    break;
+                }
+
+                for (int i = 0; i < deltaX.Length; i++)
+                {
+                    int nextX = node.X + deltaX[i];
+                    int nextY = node.Y + deltaY[i];
+
+                    if (_board.GetTileType(nextX, nextY) != Board.TileType.Empty)
+                    {
+                        continue;
+                    }
+
+                    if (visited[nextY, nextX])
+                    {
+                        continue;
+                    }
+
+                    int nextG = node.G + cost[i];
+                    int nextH =
+                        10 * (Math.Abs(_board.DestY - nextY) + Math.Abs(_board.DestX - nextX));
+                    int nextF = nextG + nextH;
+
+                    if (priority[nextY, nextX] < nextF)
+                    {
+                        continue;
+                    }
+
+                    priority[nextY, nextX] = nextF;
+                    pq.Enqueue(
+                        new PQNode()
+                        {
+                            F = nextF,
+                            G = nextG,
+                            Y = nextY,
+                            X = nextX
+                        }
+                    );
+                    parent[nextY, nextX] = new Position(node.X, node.Y);
+                }
+            }
+
+            int currX = _board.DestX;
+            int currY = _board.DestY;
+
+            while (parent[currY, currX].X != currX || parent[currY, currX].Y != currY)
+            {
+                _history.Add(new Position(currX, currY));
+
+                Position pos = parent[currY, currX];
+                currX = pos.X;
+                currY = pos.Y;
+            }
+
+            _history.Add(new Position(currX, currY));
+            _history.Reverse();
         }
 
         void BFS()
